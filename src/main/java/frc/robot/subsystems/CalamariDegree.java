@@ -58,6 +58,17 @@ public class CalamariDegree extends SubsystemBase {
         );
     }
 
+    /**
+     * Immediately send a position setpoint (in degrees) to the motor controller.
+     * This is useful for continuous input loops (e.g. joystick) where we don't
+     * want to create/schedule a new Command each update.
+     */
+    public void setPositionDegrees(double degree) {
+        var rot = degree / 360.0; // degrees -> revolutions
+        var request = new PositionVoltage(0).withSlot(0);
+        Calamari.setControl(request.withPosition(rot));
+    }
+
     @Override
     public void periodic() {
         // No periodic dashboard-driven updates. Commands are triggered from
