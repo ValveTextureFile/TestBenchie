@@ -48,6 +48,10 @@ public class RobotContainer {
    */
   private void configureBindings() {
     var cal = m_CalamariDegree;
+
+    //default command to hold position at 0 degrees
+    cal.setDefaultCommand(cal.runToDegree(0));
+
     m_driverController.a().onTrue(cal.runToDegree(90));
     m_driverController.b().onTrue(cal.runToDegree(180));
     m_driverController.x().onTrue(cal.runToDegree(270));
