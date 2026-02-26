@@ -7,7 +7,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// SmartDashboard removed; inputs now come from controller bindings.
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class CalamariDegree extends SubsystemBase {
     private final TalonFX Calamari;
     private final Slot0Configs PIDConf;
-    private double lastTarget = Double.NaN;
+    // removed SmartDashboard tracking
 
     public CalamariDegree() {
         Calamari = new TalonFX(11);
@@ -60,10 +60,7 @@ public class CalamariDegree extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double deg = SmartDashboard.getNumber("TargetDegrees", 0.0);
-        if (Double.isNaN(lastTarget) || deg != lastTarget) {
-            lastTarget = deg;
-            runToDegree(deg).schedule();
-        }
+        // No periodic dashboard-driven updates. Commands are triggered from
+        // controller bindings in RobotContainer.
     }
 }

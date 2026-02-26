@@ -11,8 +11,10 @@ import frc.robot.commands.GOTO;
 import frc.robot.subsystems.CalamariDegree;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.XboxController;
+import java.util.concurrent.ThreadLocalRandom;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,9 +27,8 @@ public class RobotContainer {
   // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final CalamariDegree m_CalamariDegree = new CalamariDegree();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  // private final CommandXboxController m_driverController =
-      // new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  // Xbox controller on port 0 for D-pad control
+  private final XboxController m_driverController = new XboxController(0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -45,13 +46,27 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    // new Trigger(m_exampleSubsystem::exampleCondition)
-        // .onTrue(new ExampleCommand(m_exampleSubsystem));
+  // D-pad (POV) mappings:
+  // Typical POV angles are 0=up, 90=right, 180=down, 270=left.
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+  // D-pad Up -> target 90
+  new Trigger(() -> m_driverController.getPOV() == 0)
+    .onTrue(m_CalamariDegree.runToDegree(90));
+
+  // D-pad Right -> target 180
+  new Trigger(() -> m_driverController.getPOV() == 90)
+    .onTrue(m_CalamariDegree.runToDegree(180));
+
+  // D-pad Down -> target 230
+  new Trigger(() -> m_driverController.getPOV() == 180)
+    .onTrue(m_CalamariDegree.runToDegree(230));
+
+  // D-pad Left -> random angle from 1-150
+  new Trigger(() -> m_driverController.getPOV() == 270)
+    .onTrue(Commands.runOnce(() -> {
+      int angle = ThreadLocalRandom.current().nextInt(1, 151);
+      m_CalamariDegree.runToDegree(angle).schedule();
+    }, m_CalamariDegree));
 
   }
 
