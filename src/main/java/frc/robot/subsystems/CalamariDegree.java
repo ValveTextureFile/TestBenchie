@@ -33,7 +33,10 @@ public class CalamariDegree extends SubsystemBase {
     }
 
     public Command runToDegree(double degree) {
-        return Commands.runOnce(
+        // Keep sending the closed-loop setpoint while the command is active.
+        // This avoids the motor controller being left without periodic updates
+        // which can cause the actuator to stop immediately after a one-shot.
+        return Commands.run(
             () -> {
                 var rot = degree / 360.0; // degrees -> revolutions (adjust for gearing if needed)
                 var request = new PositionVoltage(0).withSlot(0);
@@ -44,7 +47,8 @@ public class CalamariDegree extends SubsystemBase {
     }
 
     public Command magicToDegree(double degree) {
-        return Commands.runOnce(
+        // Motion magic: continuously request the target while the command is active.
+        return Commands.run(
             () -> {
                 var rot = degree / 360.0;
                 var request = new MotionMagicVoltage(rot).withSlot(0);
