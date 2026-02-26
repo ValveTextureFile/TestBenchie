@@ -11,7 +11,7 @@ import frc.robot.commands.GOTO;
 import frc.robot.subsystems.CalamariDegree;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+// no Trigger usage; default command will poll controller instead
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.concurrent.ThreadLocalRandom;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,9 +26,10 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final CalamariDegree m_CalamariDegree = new CalamariDegree();
-
   // CommandXboxController on port 0 for D-pad and stick control
   private final CommandXboxController m_driverController = new CommandXboxController(0);
+  // track previous POV to detect edge for random-angle generation
+  private int m_lastPOV = -1;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -46,40 +47,17 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-  // D-pad (POV) mappings:
-  // Typical POV angles are 0=up, 90=right, 180=down, 270=left.
+    var cal = m_CalamariDegree;
+    m_driverController.a().onTrue(cal.runToDegree(90));
+    m_driverController.b().onTrue(cal.runToDegree(180));
+    m_driverController.x().onTrue(cal.runToDegree(270));
+    m_driverController.y().onTrue(cal.runToDegree(0));
 
-  // D-pad Up -> target 90
-  new Trigger(() -> m_driverController.getHID().getPOV() == 0)
-    .onTrue(m_CalamariDegree.runToDegree(90));
-
-  // D-pad Right -> target 180
-  new Trigger(() -> m_driverController.getHID().getPOV() == 90)
-    .onTrue(m_CalamariDegree.runToDegree(180));
-
-  // D-pad Down -> target 230
-  new Trigger(() -> m_driverController.getHID().getPOV() == 180)
-    .onTrue(m_CalamariDegree.runToDegree(230));
-
-  // D-pad Left -> random angle from 1-150
-  new Trigger(() -> m_driverController.getHID().getPOV() == 270)
-    .onTrue(Commands.runOnce(() -> {
-      int angle = ThreadLocalRandom.current().nextInt(1, 151);
-      m_CalamariDegree.runToDegree(angle).schedule();
-    }, m_CalamariDegree));
-
-  // Left stick direction controls target angle while the stick is displaced.
-  final double deadzone = 0.12; // avoid noise near center
-  new Trigger(() -> Math.hypot(m_driverController.getLeftX(), m_driverController.getLeftY()) > deadzone)
-    .whileTrue(Commands.run(() -> {
-      double x = m_driverController.getLeftX();
-      double y = m_driverController.getLeftY();
-      // Convert joystick (x,y) to degrees. We use -y to make up = 0 degrees forward.
-      double angle = Math.toDegrees(Math.atan2(-y, x));
-      if (angle < 0) angle += 360.0;
-      m_CalamariDegree.setPositionDegrees(angle);
-    }, m_CalamariDegree));
-
+    m_driverController.povUp().onTrue(cal.runWithVelocity(100));
+    m_driverController.povDown().onTrue(cal.runWithVelocity(-100));
+    m_driverController.povLeft().onTrue(cal.runWithVelocity(1000));
+    m_driverController.povRight().onTrue(cal.runWithVelocity(-1000));
+   
   }
 
   /**

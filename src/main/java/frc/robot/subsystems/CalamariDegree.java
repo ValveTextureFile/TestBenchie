@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -58,15 +59,15 @@ public class CalamariDegree extends SubsystemBase {
         );
     }
 
-    /**
-     * Immediately send a position setpoint (in degrees) to the motor controller.
-     * This is useful for continuous input loops (e.g. joystick) where we don't
-     * want to create/schedule a new Command each update.
-     */
-    public void setPositionDegrees(double degree) {
-        var rot = degree / 360.0; // degrees -> revolutions
-        var request = new PositionVoltage(0).withSlot(0);
-        Calamari.setControl(request.withPosition(rot));
+    
+    public Command runWithVelocity(double velocity) {
+        // Open-loop voltage control with feedforward to hold position against gravity.
+        return runOnce(
+            () -> {
+                var request = new VelocityVoltage(0).withSlot(0);
+                Calamari.setControl(request.withVelocity(velocity));
+            }
+        );
     }
 
     @Override
