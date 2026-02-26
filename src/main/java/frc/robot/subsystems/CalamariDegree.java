@@ -25,9 +25,9 @@ public class CalamariDegree extends SubsystemBase {
         motorOutConf.NeutralMode = NeutralModeValue.Brake;
 
         PIDConf = new Slot0Configs();
-        PIDConf.kP = 0.001d;
+        PIDConf.kP = 10d;
         PIDConf.kI = 0d;
-        PIDConf.kD = 0d;
+        PIDConf.kD = .2d;
 
         Calamari.getConfigurator().apply(motorOutConf);
         Calamari.getConfigurator().apply(PIDConf);
